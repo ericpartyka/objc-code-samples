@@ -158,6 +158,7 @@
     self.theFooterButton.layer.cornerRadius = 20;
     [self.theFooterButton addTarget:self action:@selector(didPressAddLinkButton:) forControlEvents:UIControlEventTouchUpInside];
     [self.theFooterButton.titleLabel setFont:[UIFont fontWithName:@"Quicksand-Bold" size:15]];
+    [self.theFooterButton setTitle:NSLocalizedString(@"ADD NEW URL", @"CREATE NEW URL") forState:UIControlStateNormal];
 }
 
 - (void)configureDataSourceWithRefresh:(BOOL)refresh
@@ -166,23 +167,19 @@
     {
         [ILLinkStore didGetAllLinksWithCompletion:^(BOOL success, NSError *error, id responseObject) {
             
-            if (success)
-            {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
+            dispatch_async(dispatch_get_main_queue(), ^{
+                
+                if (success)
+                {
                     [self configureViewForSuccess:responseObject];
-                    
-                });
-            }
-            else
-            {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    
+                }
+                else
+                {
                     [self configureViewForFailure:responseObject];
-                    
-                });
-            }
-            
+                }
+                
+            });
+
         }];
     }
     else
@@ -201,22 +198,18 @@
         {
             [ILLinkStore didGetAllLinksWithCompletion:^(BOOL success, NSError *error, id responseObject) {
                 
-                if (success)
-                {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                    if (success)
+                    {
                         [self configureViewForSuccess:responseObject];
-                        
-                    });
-                }
-                else
-                {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        
+                    }
+                    else
+                    {
                         [self configureViewForFailure:responseObject];
-                        
-                    });
-                }
+                    }
+                    
+                });
                 
             }];
             
@@ -227,7 +220,6 @@
 
 - (void)configureViewForSuccess:(id)responseObject
 {
-    [[ILCacheUtil theCacheManager] didCacheObject:responseObject withKey:[ILLinkModel theLink]];
     self.theDataArray = responseObject;
     [_theTableView reloadData];
     [self.theRefreshControl endRefreshing];
@@ -421,7 +413,7 @@
         }
         else
         {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Unlock Feature" message:@"Having more than 6 links is a premium feature. Please upgrade your payment plan to unlock this." delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Maximum Links Created" message:@"You can only create 8 links total. Please remove a link to add a new one." delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil, nil];
             [alert show];
         }
     }
@@ -439,7 +431,7 @@
 
 - (BOOL)doesHaveMaxFreeLinks
 {
-    if (_theDataArray.count == 6)
+    if (_theDataArray.count == 8)
     {
         return YES;
     }
@@ -528,7 +520,7 @@
 {
 	NSIndexPath *theIndexPath = [_theTableView indexPathForCell:cell];
 	
-    if (direction == MGSwipeDirectionLeftToRight)
+    if (direction == MGSwipeDirectionRightToLeft)
     {
         NSLog(@"Tapped Index %ld", (long)index);
 		
@@ -597,7 +589,7 @@
 
 - (void)didDismissWithShareAppSelection
 {
-    NSString *theAppStringURL = @"appstring";
+    NSString *theAppStringURL = [NSString stringWithFormat:@"Join the movement and claim your free Instalink profile today by downloading the app! %@", @"https://itunes.apple.com/us/app/instalink-the-dedicated-flexible-url/id1027499757?ls=1&mt=8"];
     NSArray *theArray = [[NSArray alloc] initWithObjects:theAppStringURL, nil];
     
     self.theShareController = [[UIActivityViewController alloc] initWithActivityItems:theArray applicationActivities:nil];
@@ -615,8 +607,8 @@
 
 - (void)didDimissMenuWithShareInstalinkSelection
 {
-    NSString *theInstalinkURLString = [ILUserModel theInstalinkURLString];
-    NSArray *theArray = [[NSArray alloc] initWithObjects:theInstalinkURLString, nil];
+    NSString *theURLString = [NSString stringWithFormat:@"http://www.%@", [ILUserModel theInstalinkURLString]];
+    NSArray *theArray = [[NSArray alloc] initWithObjects:theURLString, nil];
     
     self.theShareController = [[UIActivityViewController alloc] initWithActivityItems:theArray applicationActivities:nil];
     
