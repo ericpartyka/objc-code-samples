@@ -30,6 +30,8 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "UIColor+Hex.h"
 
+#define MAX_LINKS  8
+
 @interface ILLinkManagerController () <UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, DZNEmptyDataSetSource, DZNEmptyDataSetDelegate, ILLinkDetailControllerDelegate, UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning, MGSwipeTableCellDelegate, SSARefreshControlDelegate, ILMenuControllerDelegate>
 
 #pragma mark - Properties
@@ -118,6 +120,8 @@
     
 }
 
+// set any view display properties, colors, or custom interactions
+
 - (void)configureView
 {
     self.theTableView.tableFooterView = [UIView new];
@@ -126,9 +130,10 @@
     
     self.theRefreshControl = [[SSARefreshControl alloc] initWithScrollView:_theTableView andRefreshViewLayerType:SSARefreshViewLayerTypeOnScrollView];
     self.theRefreshControl.delegate = self;
-
-
 }
+
+// set navigation bar titles, customer interations, or butons
+// all color appearances should be configured in ILAppearanceUtil
 
 - (void)configureNavBar
 {
@@ -136,6 +141,8 @@
     self.navigationController.navigationBar.translucent = NO;
 }
 
+// set search bar titles, customer interations
+// all color appearances should be configured in ILAppearanceUtil
 
 - (void)configureSearchBar
 {
@@ -143,13 +150,16 @@
     self.theSearchBar.keyboardAppearance = UIKeyboardAppearanceDark;
     [self.theSearchBar setReturnKeyType:UIReturnKeyDone];
     self.theSearchBar.enablesReturnKeyAutomatically = NO;
-    
 }
+
+// register any UITableViewCells or custom XIBs needed for the linkmanager tableview
 
 - (void)configureXIBs
 {
     [_theTableView registerNib:[UINib nibWithNibName:@"ILLinkItemTableViewCell" bundle:[NSBundle mainBundle]] forCellReuseIdentifier:@"ILLinkItemTableViewCell"];
 }
+
+// set font, action, appearance, title for hover footer button
 
 - (void)configureFooterButton
 {
@@ -160,6 +170,10 @@
     [self.theFooterButton.titleLabel setFont:[UIFont fontWithName:@"Quicksand-Bold" size:15]];
     [self.theFooterButton setTitle:NSLocalizedString(@"ADD NEW URL", @"CREATE NEW URL") forState:UIControlStateNormal];
 }
+
+// when loading the data source, first check if data exsists in the cache already
+// if there is data in the cache load from cache
+// else we call the API to load fresh data
 
 - (void)configureDataSourceWithRefresh:(BOOL)refresh
 {
@@ -215,8 +229,9 @@
             
         }
     }
-    
 }
+
+// handle any successful UI/data refreshing after data source loading logic
 
 - (void)configureViewForSuccess:(id)responseObject
 {
@@ -224,6 +239,8 @@
     [_theTableView reloadData];
     [self.theRefreshControl endRefreshing];
 }
+
+// handle any failure UI/data refreshing after data source loading logic
 
 - (void)configureViewForFailure:(id)responseObject
 {
@@ -398,6 +415,10 @@
     
 }
 
+// creating new link logic goes here
+// first check if anything in the datasource, if something is there, check if max links created
+// if max links NOT created, allow user to add new link
+
 - (IBAction)didPressAddLinkButton:(id)sender
 {
     if ([ILValidationUtil isArrayValid:_theDataArray])
@@ -426,12 +447,13 @@
         [self.navigationController pushViewController:controller animated:YES];
 
     }
-    
 }
+
+// helper check to determine if max links created
 
 - (BOOL)doesHaveMaxFreeLinks
 {
-    if (_theDataArray.count == 8)
+    if (_theDataArray.count == MAX_LINKS)
     {
         return YES;
     }
@@ -587,6 +609,8 @@
 	[self.navigationController pushViewController:controller animated:YES];
 }
 
+// present share sheet with app share link
+
 - (void)didDismissWithShareAppSelection
 {
     NSString *theAppStringURL = [NSString stringWithFormat:@"Join the movement and claim your free Instalink profile today by downloading the app! %@", @"https://itunes.apple.com/us/app/instalink-the-dedicated-flexible-url/id1027499757?ls=1&mt=8"];
@@ -604,6 +628,8 @@
     });
     
 }
+
+// present share sheet with instalink domain
 
 - (void)didDimissMenuWithShareInstalinkSelection
 {
@@ -628,9 +654,10 @@
     [self showHelpCenter];
 }
 
+// present any help center/support logic here, currently ZendeskKitSDK
+
 - (void)showHelpCenter
 {
-
     [ZDKRequests presentRequestCreationWithViewController:self];
     
     [ZDKRequests configure:^(ZDKAccount *account, ZDKRequestCreationConfig *requestCreationConfig) {
